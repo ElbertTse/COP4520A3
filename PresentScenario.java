@@ -5,6 +5,8 @@ public class PresentScenario {
         for (int i = 0; i < 10; i++)
             ll.add(i);
 
+        
+
         System.out.println(ll);
 
         System.out.println(ll.contains(5));
@@ -13,6 +15,6 @@ public class PresentScenario {
         System.out.println(ll.contains(5));
         System.out.println(ll.dequeue());
         System.out.println(ll);
-
+        System.out.println("Done!");
     }
 }

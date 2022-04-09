@@ -1,14 +1,15 @@
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ConcurrentLL {
-    public class Node{
-        ReentrantLock lock;
+    // Optimisic list
+    public class Node {
+        ReentrantLock reentrantLock;
         Node next;
         int data;
         int key;
 
         public Node(int key) {
-            this.lock = new ReentrantLock();
+            this.reentrantLock = new ReentrantLock();
             this.key = key;
             this.data = key;
             next = null;
@@ -17,22 +18,52 @@ public class ConcurrentLL {
 
     private Node head;
 
-    public ConcurrentLL(){
+    public ConcurrentLL() {
         this.head = new Node(Integer.MIN_VALUE);
     }
 
-    public boolean contains(int target) {
-        Node cur = this.head.next;
+    public boolean validate(Node pred, Node cur) {
+        Node node = this.head;
 
-        while (cur != null && cur.key <= target) {
-            if (cur.key == target) {
-                return true;
+        while (node.key <= pred.key) {
+            if (node == pred) {
+                return pred.next == cur;
             }
 
-            cur = cur.next;
+            node = node.next;
         }
-
         return false;
+    }
+
+    public boolean contains(int target) {
+        while (true) {
+            Node pred = this.head, cur = this.head.next;
+
+            while (cur != null && cur.key < target) {
+                pred = cur;
+                cur = cur.next;
+            }
+
+            if (pred != null)
+                pred.reentrantLock.lock();
+
+            if (cur != null)
+                cur.reentrantLock.lock();
+
+            try {
+                if (cur != null && validate(pred, cur)) {
+                    return cur.key == target;
+                } else {
+                    return false;
+                }
+            } finally {
+                if (pred != null)
+                    pred.reentrantLock.unlock();
+
+                if (cur != null)
+                    cur.reentrantLock.unlock();
+            }
+        }
     }
 
     public boolean add(int item) {
@@ -40,48 +71,107 @@ public class ConcurrentLL {
             return false;
         }
 
-        Node pred = this.head, cur = this.head.next;
+        while (true) {
+            Node pred = this.head, cur = this.head.next;
 
-        // Move to where we should add
-        while (cur != null && cur.key < item) {
-            pred = cur;
-            cur = cur.next;
+            // Move to where we should add
+            while (cur != null && cur.key < item) {
+                pred = cur;
+                cur = cur.next;
+            }
+
+            if (pred != null)
+                pred.reentrantLock.lock();
+
+            if (cur != null)
+                cur.reentrantLock.lock();
+
+            try {
+                if (validate(pred, cur)) {
+                    Node newItem = new Node(item);
+                    newItem.next = cur;
+                    pred.next = newItem;
+                    return true;
+                }
+            } finally {
+                if (pred != null)
+                    pred.reentrantLock.unlock();
+
+                if (cur != null)
+                    cur.reentrantLock.unlock();
+            }
         }
-
-        Node toBeAdded = new Node(item);
-        toBeAdded.next = cur;
-        pred.next = toBeAdded;
-
-        return true;
     }
 
     public boolean remove(int target) {
         if (!contains(target)) {
             return false;
         }
-        
-        Node pred = this.head, cur = this.head.next;
 
-        // Move to where the target is
-        while (cur != null && cur.key < target) {
-            pred = cur;
-            cur = cur.next;
+        while (true) {
+            Node pred = this.head, cur = this.head.next;
+
+            while (cur != null && cur.key < target) {
+                pred = cur;
+                cur = cur.next;
+            }
+
+            if (pred != null)
+                pred.reentrantLock.lock();
+
+            if (cur != null)
+                cur.reentrantLock.lock();
+
+            try {
+                if (validate(pred, cur)) {
+                    // Double check that cur's key is the target
+                    if (cur.key == target) {
+                        pred.next = cur.next;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            } finally {
+                if (pred != null)
+                    pred.reentrantLock.unlock();
+
+                if (cur != null)
+                    cur.reentrantLock.unlock();
+            }
         }
-
-        pred.next = cur.next;
-        
-        return true;
     }
 
     public int dequeue() throws NullPointerException {
-        int retval;
+        int retval = Integer.MIN_VALUE;
         Node pred = this.head, cur = this.head.next;
-        if (cur == null)
-            throw new NullPointerException();
+        // if (cur == null)
+        // throw new NullPointerException();
 
-        retval = cur.data;
-        
-        pred.next = cur.next;
+        // retval = cur.data;
+
+        // pred.next = cur.next;
+
+        // return retval;
+
+        if (pred != null)
+                pred.reentrantLock.lock();
+
+            if (cur != null)
+                cur.reentrantLock.lock();
+
+        try {
+            if (validate(pred, cur)) {
+                retval = cur.data;
+                pred.next = cur.next;
+            }
+        } finally {
+            if (pred != null)
+            pred.reentrantLock.unlock();
+
+            if (cur != null)
+                cur.reentrantLock.unlock();
+        }
 
         return retval;
     }
@@ -89,7 +179,7 @@ public class ConcurrentLL {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         Node cur = this.head.next;
-        
+
         while (cur != null) {
             sb.append(cur.data + " ");
             cur = cur.next;
