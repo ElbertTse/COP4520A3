@@ -1,20 +1,31 @@
 public class PresentScenario {
     public static void main(String[] args) {
-        ConcurrentLL ll = new ConcurrentLL();
+        ConcurrentLL giftbag = new ConcurrentLL();
+        ConcurrentLL chain = new ConcurrentLL();
+        Thread[] threads = new Thread[4];
 
-        for (int i = 0; i < 10; i++)
-            ll.add(i);
+        try {
+            System.out.println("Smoke");
+            for (int i = 1; i <= 500000; i++) {
+                giftbag.add(i);
+            }
+            System.out.println("Fire");
+    
+            // for (int i = 0; i < 4; i++) {
+            //     threads[i] = new Thread(new TaskRunner(giftbag, chain));
+            // }
+    
+            // for (Thread thread : threads) {
+            //     thread.start();
+            // }
+    
+            // for (Thread thread : threads) {
+            //     thread.join();
+            // }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        
-
-        System.out.println(ll);
-
-        System.out.println(ll.contains(5));
-        ll.remove(5);
-        System.out.println(ll);
-        System.out.println(ll.contains(5));
-        System.out.println(ll.dequeue());
-        System.out.println(ll);
         System.out.println("Done!");
     }
 }

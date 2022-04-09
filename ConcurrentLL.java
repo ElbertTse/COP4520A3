@@ -22,6 +22,17 @@ public class ConcurrentLL {
         this.head = new Node(Integer.MIN_VALUE);
     }
 
+    public boolean isEmpty() {
+        Node node = this.head;
+
+        try {
+            node.reentrantLock.lock();
+            return head.next == null;
+        } finally {
+            node.reentrantLock.unlock();
+        }
+    }
+
     public boolean validate(Node pred, Node cur) {
         Node node = this.head;
 
