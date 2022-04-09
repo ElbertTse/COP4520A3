@@ -20,7 +20,7 @@ public class TaskRunner implements Runnable {
                     break;
                 
                 case 1:
-                    System.out.println(Thread.currentThread().getName() + " has counter " + counter);
+                    this.chain.dequeue();
                     break;
 
                 case 2:
