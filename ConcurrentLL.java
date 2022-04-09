@@ -1,10 +1,14 @@
+import java.util.concurrent.locks.ReentrantLock;
+
 public class ConcurrentLL {
     public class Node{
+        ReentrantLock lock;
         Node next;
         int data;
         int key;
 
         public Node(int key) {
+            this.lock = new ReentrantLock();
             this.key = key;
             this.data = key;
             next = null;
@@ -59,7 +63,6 @@ public class ConcurrentLL {
         Node pred = this.head, cur = this.head.next;
 
         // Move to where the target is
-
         while (cur != null && cur.key < target) {
             pred = cur;
             cur = cur.next;
@@ -68,6 +71,19 @@ public class ConcurrentLL {
         pred.next = cur.next;
         
         return true;
+    }
+
+    public int dequeue() throws NullPointerException {
+        int retval;
+        Node pred = this.head, cur = this.head.next;
+        if (cur == null)
+            throw new NullPointerException();
+
+        retval = cur.data;
+        
+        pred.next = cur.next;
+
+        return retval;
     }
 
     public String toString() {

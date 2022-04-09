@@ -11,5 +11,8 @@ public class PresentScenario {
         ll.remove(5);
         System.out.println(ll);
         System.out.println(ll.contains(5));
+        System.out.println(ll.dequeue());
+        System.out.println(ll);
+
     }
 }
