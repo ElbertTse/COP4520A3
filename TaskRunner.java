@@ -1,34 +1,44 @@
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class TaskRunner implements Runnable {
 
-    private ConcurrentLL giftbag;
+    private AtomicInteger gifts;
     private ConcurrentLL chain;
     private int counter;
 
-    public TaskRunner(ConcurrentLL giftbag, ConcurrentLL chain) {
-        this.giftbag = giftbag;
+    public TaskRunner(AtomicInteger gifts, ConcurrentLL chain) {
+        this.gifts = gifts;
         this.chain = chain;
         this.counter = 0;
     }
 
     @Override
     public void run() {
-        while (!this.giftbag.isEmpty()) {
-            switch (counter % 3) {
-                case 0:
-                    int gift = this.giftbag.dequeue();
-                    this.chain.add(gift);
-                    break;
-                
-                case 1:
-                    this.chain.dequeue();
-                    break;
+        try {
+            int ctr = this.gifts.getAndIncrement();        
+        
+            do {
+                switch (counter % 3) {
+                    case 0:
+                        
+                        this.chain.add(ctr);
+                        break;
+                    
+                    case 1:
+                        this.chain.dequeue();
+                        break;
 
-                case 2:
-                    this.chain.contains(counter);
-                    break;
-            }
+                    case 2:
+                        this.chain.contains(counter);
+                        break;
+                }
 
-            counter++;
+                this.counter++;
+                ctr = this.gifts.getAndIncrement();
+            } while (ctr < 500000);
+        } catch (Exception e) {
+            System.out.println(Thread.currentThread().getName() + " crashed with " + e.toString());
+            e.printStackTrace();
         }
     }
     

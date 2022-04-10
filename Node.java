@@ -1,15 +1,13 @@
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicMarkableReference;
 
 public class Node {
-    ReentrantLock reentrantLock;
-    Node next;
+    AtomicMarkableReference<Node> next;
     int data;
     int key;
 
     public Node(int key) {
-        this.reentrantLock = new ReentrantLock();
         this.key = key;
         this.data = key;
-        next = null;
+        this.next = new AtomicMarkableReference<Node>(null, false);
     }
 }

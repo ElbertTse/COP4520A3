@@ -1,3 +1,5 @@
+import java.util.concurrent.atomic.AtomicMarkableReference;
+
 public class ConcurrentLL {
     // Optimisic list
     private Node head;
@@ -7,165 +9,139 @@ public class ConcurrentLL {
     }
 
     public boolean isEmpty() {
-        Node node = this.head;
+        boolean[] marked = {false};
+        Node node = this.head.next.get(marked);
 
-        try {
-            node.reentrantLock.lock();
-            return head.next == null;
-        } finally {
-            node.reentrantLock.unlock();
-        }
-    }
-
-    public boolean validate(Node pred, Node cur) {
-        Node node = this.head;
-
-        while (node.key <= pred.key) {
-            if (node == pred) {
-                return pred.next == cur;
-            }
-
-            node = node.next;
-        }
-        return false;
+        return node == null && !marked[0];
     }
 
     public boolean contains(int target) {
-        while (true) {
-            Node pred = this.head, cur = this.head.next;
+        boolean[] marked = {false};
+        Node cur = this.head;
 
-            while (cur != null && cur.key < target) {
-                pred = cur;
-                cur = cur.next;
+        while (cur.key < target) {
+            cur = cur.next.getReference();
+
+            if (cur == null) {
+                return false;
             }
 
-            if (pred != null)
-                pred.reentrantLock.lock();
-
-            if (cur != null)
-                cur.reentrantLock.lock();
-
-            try {
-                if (cur != null && validate(pred, cur)) {
-                    return cur.key == target;
-                } else {
-                    return false;
-                }
-            } finally {
-                if (pred != null)
-                    pred.reentrantLock.unlock();
-
-                if (cur != null)
-                    cur.reentrantLock.unlock();
-            }
+            Node suc = cur.next.get(marked);
         }
+
+        return (cur.key == target) && !marked[0];
     }
 
     public boolean add(int item) {
         while (true) {
-            Node pred = this.head, cur = this.head.next;
+            Window window = find(head, item);
+            Node pred = window.pred, cur = window.cur;
 
-            // Move to where we should add
-            while (cur != null && cur.key < item) {
-                pred = cur;
-                cur = cur.next;
-            }
+            if (cur != null && cur.key == item) {
+                return false;
+            } else {
+                Node node = new Node(item);
+                node.next = new AtomicMarkableReference<Node>(cur, false);
 
-            if (pred != null)
-                pred.reentrantLock.lock();
-
-            if (cur != null)
-                cur.reentrantLock.lock();
-
-            try {
-                if (validate(pred, cur)) {
-                    // If cur points to a node and the key is the same
-                    if (cur != null && cur.key == item) {
-                        return false;
-                    } else {
-                        Node newItem = new Node(item);
-                        newItem.next = cur;
-                        pred.next = newItem;
-                        return true;
-                    }
+                if (pred.next.compareAndSet(cur, node, false, false)) {
+                    return true;
                 }
-            } finally {
-                if (pred != null)
-                    pred.reentrantLock.unlock();
-
-                if (cur != null)
-                    cur.reentrantLock.unlock();
             }
         }
     }
 
     public boolean remove(int target) {
+        boolean snip;
+
         while (true) {
-            Node pred = this.head, cur = this.head.next;
+            Window window = find(this.head, target);
+            Node pred = window.pred, cur = window.cur;
 
-            while (cur != null && cur.key < target) {
-                pred = cur;
-                cur = cur.next;
-            }
+            if (cur != null && cur.key != target) {
+                return false;
+            } else {
+                Node suc = cur.next.getReference();
 
-            if (pred != null)
-                pred.reentrantLock.lock();
+                // Mark cur as logically deleted
+                snip = cur.next.compareAndSet(suc, suc, false, true);
 
-            if (cur != null)
-                cur.reentrantLock.lock();
-
-            try {
-                if (validate(pred, cur)) {
-                    if (cur.key == target) {
-                        pred.next = cur.next;
-                        return true;
-                    } else {
-                        return false;
-                    }
+                if (!snip) {
+                    continue;
                 }
-            } finally {
-                if (pred != null)
-                    pred.reentrantLock.unlock();
+                // Try to remove cur once
+                pred.next.compareAndSet(cur, suc, false, false);
 
-                if (cur != null)
-                    cur.reentrantLock.unlock();
+                return true;
             }
         }
     }
 
     public int dequeue() throws NullPointerException {
         int retval = Integer.MIN_VALUE;
-        Node pred = this.head, cur = this.head.next;
+        boolean[] marked = {false};
+        Node pred = this.head, cur = this.head.next.get(marked);
 
-        if (pred != null)
-                pred.reentrantLock.lock();
+        if (!marked[0] && cur != null) {
+            Node suc = cur.next.getReference();
+            retval = cur.data;
 
-            if (cur != null)
-                cur.reentrantLock.lock();
+            // Now remove cur
+            // Locigcal delete
+            cur.next.compareAndSet(suc, suc, false, true);
 
-        try {
-            if (validate(pred, cur)) {
-                retval = cur.data;
-                pred.next = cur.next;
-            }
-        } finally {
-            if (pred != null)
-            pred.reentrantLock.unlock();
-
-            if (cur != null)
-                cur.reentrantLock.unlock();
+            // Physical delete
+            pred.next.compareAndSet(cur, suc, false, false);
         }
 
         return retval;
     }
 
+    public Window find(Node head, int target) {
+        Node pred = null, cur = null, suc = null;
+        boolean[] marked = {false};
+        boolean snip;
+
+        retry: while (true) {
+            pred = head;
+            cur = pred.next.getReference();
+
+            // Move to window
+            while (true) {
+
+                if (cur == null) {
+                    return new Window(pred, cur);
+                }
+                else {
+                    suc = cur.next.get(marked);
+                }
+                // Found a marked node, physically remove it.
+                while (marked[0]) {
+                    snip = pred.next.compareAndSet(cur, suc, false, false);
+
+                    if (!snip) {
+                        continue retry;
+                    }
+                    cur = suc;
+                    suc = cur.next.get(marked);
+                }
+
+                if (cur.key >= target) {
+                    return new Window(pred, cur);
+                }
+
+                pred = cur;
+                cur = suc;
+            }
+        }
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        Node cur = this.head.next;
+        Node cur = this.head.next.getReference();
 
         while (cur != null) {
             sb.append(cur.data + " ");
-            cur = cur.next;
+            cur = cur.next.getReference();
         }
 
         return sb.toString();
