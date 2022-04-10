@@ -1,21 +1,5 @@
-import java.util.concurrent.locks.ReentrantLock;
-
 public class ConcurrentLL {
     // Optimisic list
-    public class Node {
-        ReentrantLock reentrantLock;
-        Node next;
-        int data;
-        int key;
-
-        public Node(int key) {
-            this.reentrantLock = new ReentrantLock();
-            this.key = key;
-            this.data = key;
-            next = null;
-        }
-    }
-
     private Node head;
 
     public ConcurrentLL() {
@@ -78,10 +62,6 @@ public class ConcurrentLL {
     }
 
     public boolean add(int item) {
-        if (contains(item)) {
-            return false;
-        }
-
         while (true) {
             Node pred = this.head, cur = this.head.next;
 
@@ -99,10 +79,15 @@ public class ConcurrentLL {
 
             try {
                 if (validate(pred, cur)) {
-                    Node newItem = new Node(item);
-                    newItem.next = cur;
-                    pred.next = newItem;
-                    return true;
+                    // If cur points to a node and the key is the same
+                    if (cur != null && cur.key == item) {
+                        return false;
+                    } else {
+                        Node newItem = new Node(item);
+                        newItem.next = cur;
+                        pred.next = newItem;
+                        return true;
+                    }
                 }
             } finally {
                 if (pred != null)
@@ -115,10 +100,6 @@ public class ConcurrentLL {
     }
 
     public boolean remove(int target) {
-        if (!contains(target)) {
-            return false;
-        }
-
         while (true) {
             Node pred = this.head, cur = this.head.next;
 
@@ -135,7 +116,6 @@ public class ConcurrentLL {
 
             try {
                 if (validate(pred, cur)) {
-                    // Double check that cur's key is the target
                     if (cur.key == target) {
                         pred.next = cur.next;
                         return true;
@@ -156,14 +136,6 @@ public class ConcurrentLL {
     public int dequeue() throws NullPointerException {
         int retval = Integer.MIN_VALUE;
         Node pred = this.head, cur = this.head.next;
-        // if (cur == null)
-        // throw new NullPointerException();
-
-        // retval = cur.data;
-
-        // pred.next = cur.next;
-
-        // return retval;
 
         if (pred != null)
                 pred.reentrantLock.lock();

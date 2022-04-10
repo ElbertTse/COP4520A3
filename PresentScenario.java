@@ -6,7 +6,8 @@ public class PresentScenario {
 
         try {
             System.out.println("Smoke");
-            for (int i = 1; i <= 500000; i++) {
+            for (int i = 0; i < 10000; i++) {
+                System.out.println("Adding " + i);
                 giftbag.add(i);
             }
             System.out.println("Fire");
@@ -25,7 +26,6 @@ public class PresentScenario {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         System.out.println("Done!");
     }
 }
