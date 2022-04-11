@@ -26,6 +26,9 @@ public class ConcurrentLL {
                 return false;
             }
 
+            // Suppressing since we really just want to update the marked array
+            // Not using suc
+            @SuppressWarnings("unused")
             Node suc = cur.next.get(marked);
         }
 
