@@ -40,7 +40,7 @@ public class Rover {
 
         try {
             // Run for 24 hours
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 24; i++) {
                 for (int j = 0; j < numThreads; j++) {
                     threads[j] = new Thread(new Sensor(temps));
                 }
@@ -54,6 +54,7 @@ public class Rover {
                 }
                 
                 printReport(i, temps);
+                temps.clear();
             }
         } catch (Exception e) {
             e.printStackTrace();
