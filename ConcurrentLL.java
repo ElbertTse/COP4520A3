@@ -107,14 +107,14 @@ public class ConcurrentLL {
 
             // Move to window
             while (true) {
-
                 if (cur == null) {
                     return new Window(pred, cur);
+                    // continue retry;
                 }
                 else {
                     suc = cur.next.get(marked);
                 }
-                // Found a marked node, physically remove it.
+                // Found a marked node, physically remove it
                 while (marked[0]) {
                     snip = pred.next.compareAndSet(cur, suc, false, false);
 
@@ -123,11 +123,11 @@ public class ConcurrentLL {
                     }
                     cur = suc;
 
-                    // TODO figure out what to do here if cur is null since we should be physically removing a node
                     if (cur == null) {
-                        int temp = pred.next.getReference() == null ? -1 : pred.next.getReference().data;
-                        // System.out.println(Thread.currentThread().getName() + " " + pred.data + " -> " + temp + ", will crash");
+                        // Cur is null so retry
+                        continue retry;
                     }
+
                     suc = cur.next.get(marked);
                 }
 

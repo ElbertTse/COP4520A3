@@ -15,12 +15,10 @@ public class Servant implements Runnable {
     @Override
     public void run() {
         int ctr = this.gifts.getAndIncrement();
-        boolean writing = false;
         try {
             do {
                 switch (counter % 3) {
                     case 0:
-                        // System.out.println(Thread.currentThread().getName() + " adding " + ctr + " with chain: " + this.chain);
                         this.chain.add(ctr);
                         break;
                     
@@ -37,15 +35,12 @@ public class Servant implements Runnable {
                 ctr = this.gifts.getAndIncrement();
             } while (ctr < 500000);
 
-            writing = true;
-
             while (!this.chain.isEmpty()) {
                 this.chain.dequeue();
             }
 
         } catch (Exception e) {
-            // System.out.println(Thread.currentThread().getName() + " ctr " + ctr + ", op " + counter % 3 + ", writing? " + writing + ", chain: " + chain);
-            // e.printStackTrace();
+            e.printStackTrace();
         }
     }
     
