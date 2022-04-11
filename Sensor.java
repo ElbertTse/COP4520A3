@@ -1,25 +1,23 @@
+import java.util.Random;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Sensor implements Runnable{
 
-    private ConcurrentSkipListSet<Integer>[] temps;
-    private AtomicInteger globalClock;
-    private int prevTime;
+    private ConcurrentSkipListSet<Double> temps;
 
-    public Sensor(ConcurrentSkipListSet<Integer>[] temps, AtomicInteger globalClock) {
+    public Sensor(ConcurrentSkipListSet<Double> temps) {
         this.temps = temps;
-        this.globalClock = globalClock;
-        this.prevTime = -1;
     }
 
     @Override
     public void run() {
+        Random random = new Random();
         
-        while (this.globalClock.get() < 1440) {
-            
+        for (int i = 0; i < 60; i++) {
+            // get a random number from 0 to 170, add it to the min. temp
+            double temp = random.nextDouble(170) - 100;
+            temps.add(temp);
         }
-        
     }
     
 }

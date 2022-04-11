@@ -1,0 +1,5 @@
+p2:
+	javac Rover.java Sensor.java;
+	java Rover;
+	rm *.class;
+
