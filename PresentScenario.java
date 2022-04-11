@@ -2,12 +2,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class PresentScenario {
     public static void main(String[] args) {
+        int numThreads = 4;
         AtomicInteger gifts = new AtomicInteger(0);
         ConcurrentLL chain = new ConcurrentLL();
-        Thread[] threads = new Thread[4];
+        Thread[] threads = new Thread[numThreads];
 
         try {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < numThreads; i++) {
                 threads[i] = new Thread(new TaskRunner(gifts, chain));
             }
     
@@ -21,6 +22,7 @@ public class PresentScenario {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println(chain);
         System.out.println("Done!");
     }
 }

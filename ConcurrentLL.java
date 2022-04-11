@@ -122,6 +122,11 @@ public class ConcurrentLL {
                         continue retry;
                     }
                     cur = suc;
+
+                    // TODO figure out what to do here if cur is null since we should be physically removing a node
+                    if (cur == null) {
+                        System.out.println(Thread.currentThread().getName() + " " + pred.data + " -> null, will crash");
+                    }
                     suc = cur.next.get(marked);
                 }
 
@@ -137,10 +142,10 @@ public class ConcurrentLL {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        Node cur = this.head.next.getReference();
+        Node cur = this.head;
 
         while (cur != null) {
-            sb.append(cur.data + " ");
+            sb.append(cur.data + " -> ");
             cur = cur.next.getReference();
         }
 

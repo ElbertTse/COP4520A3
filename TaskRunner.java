@@ -14,13 +14,13 @@ public class TaskRunner implements Runnable {
 
     @Override
     public void run() {
+        int ctr = this.gifts.getAndIncrement();
+
         try {
-            int ctr = this.gifts.getAndIncrement();        
-        
             do {
                 switch (counter % 3) {
                     case 0:
-                        
+                        // System.out.println(Thread.currentThread().getName() + " adding " + ctr + " with chain: " + this.chain);
                         this.chain.add(ctr);
                         break;
                     
@@ -36,8 +36,12 @@ public class TaskRunner implements Runnable {
                 this.counter++;
                 ctr = this.gifts.getAndIncrement();
             } while (ctr < 500000);
+
+            while (!this.chain.isEmpty()) {
+                this.chain.dequeue();
+            }
         } catch (Exception e) {
-            System.out.println(Thread.currentThread().getName() + " crashed with " + e.toString());
+            System.out.println(Thread.currentThread().getName() + " on " + ctr + " chain: " + chain);
             e.printStackTrace();
         }
     }
