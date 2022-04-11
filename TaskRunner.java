@@ -15,7 +15,7 @@ public class TaskRunner implements Runnable {
     @Override
     public void run() {
         int ctr = this.gifts.getAndIncrement();
-
+        boolean writing = false;
         try {
             do {
                 switch (counter % 3) {
@@ -37,12 +37,15 @@ public class TaskRunner implements Runnable {
                 ctr = this.gifts.getAndIncrement();
             } while (ctr < 500000);
 
+            writing = true;
+
             while (!this.chain.isEmpty()) {
                 this.chain.dequeue();
             }
+
         } catch (Exception e) {
-            System.out.println(Thread.currentThread().getName() + " on " + ctr + " chain: " + chain);
-            e.printStackTrace();
+            // System.out.println(Thread.currentThread().getName() + " ctr " + ctr + ", op " + counter % 3 + ", writing? " + writing + ", chain: " + chain);
+            // e.printStackTrace();
         }
     }
     

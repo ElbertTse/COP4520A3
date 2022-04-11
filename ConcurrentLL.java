@@ -125,7 +125,8 @@ public class ConcurrentLL {
 
                     // TODO figure out what to do here if cur is null since we should be physically removing a node
                     if (cur == null) {
-                        System.out.println(Thread.currentThread().getName() + " " + pred.data + " -> null, will crash");
+                        int temp = pred.next.getReference() == null ? -1 : pred.next.getReference().data;
+                        // System.out.println(Thread.currentThread().getName() + " " + pred.data + " -> " + temp + ", will crash");
                     }
                     suc = cur.next.get(marked);
                 }
