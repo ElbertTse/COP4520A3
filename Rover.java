@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Rover {
 
-    public static void printReport(int day, ConcurrentSkipListSet<Double> temps) {
+    public static void printReport(int day, ConcurrentSkipListSet<Double> temps, ConcurrentSkipListSet<TempData> diffs) {
         double[] highs = new double[5];
         double[] lows = new double[5];
 
@@ -27,14 +27,15 @@ public class Rover {
             System.out.print(lows[i] + " ");
         }
 
-        System.out.println("\n\n--------------------------------------------------\n");
+        System.out.println("\n\n" + diffs.pollLast().getTimeDifference());
+        System.out.println("\n--------------------------------------------------\n");
     }
 
     public static void main(String[] args) {
         int numThreads = 8;
-        // Add one more thread for control module
         Thread[] threads = new Thread[numThreads];
         ConcurrentSkipListSet<Double> temps = new ConcurrentSkipListSet<>();
+        ConcurrentSkipListSet<TempData> diffs = new ConcurrentSkipListSet<>();
         
         System.out.println();
 
@@ -42,7 +43,7 @@ public class Rover {
             // Run for 24 hours
             for (int i = 0; i < 24; i++) {
                 for (int j = 0; j < numThreads; j++) {
-                    threads[j] = new Thread(new Sensor(temps));
+                    threads[j] = new Thread(new Sensor(temps, diffs));
                 }
 
                 for (Thread thread : threads) {
@@ -53,8 +54,9 @@ public class Rover {
                     thread.join();
                 }
                 
-                printReport(i, temps);
+                printReport(i, temps, diffs);
                 temps.clear();
+                diffs.clear();
             }
         } catch (Exception e) {
             e.printStackTrace();
