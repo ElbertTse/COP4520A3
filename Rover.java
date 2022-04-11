@@ -1,4 +1,7 @@
+// Elbert Tse, COP 4520, Spring 2022
+
 import java.util.concurrent.ConcurrentSkipListSet;
+
 public class Rover {
 
     public static void printReport(int day, ConcurrentSkipListSet<Double> temps) {

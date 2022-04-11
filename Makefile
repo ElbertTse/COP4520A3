@@ -1,3 +1,5 @@
+# Elbert Tse, COP 4520, Spring 2022
+
 p1:
 	make -f makefile.p1;
 
