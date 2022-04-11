@@ -1,4 +1,4 @@
 build:
-	javac PresentScenario.java TaskRunner.java ConcurrentLL.java Window.java;
+	javac PresentScenario.java Servant.java ConcurrentLL.java Window.java;
 	java PresentScenario;
 	rm *.class;

@@ -1,12 +1,12 @@
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class TaskRunner implements Runnable {
+public class Servant implements Runnable {
 
     private AtomicInteger gifts;
     private ConcurrentLL chain;
     private int counter;
 
-    public TaskRunner(AtomicInteger gifts, ConcurrentLL chain) {
+    public Servant(AtomicInteger gifts, ConcurrentLL chain) {
         this.gifts = gifts;
         this.chain = chain;
         this.counter = 0;

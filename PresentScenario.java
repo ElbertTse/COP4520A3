@@ -9,7 +9,7 @@ public class PresentScenario {
 
         try {
             for (int i = 0; i < numThreads; i++) {
-                threads[i] = new Thread(new TaskRunner(gifts, chain));
+                threads[i] = new Thread(new Servant(gifts, chain));
             }
     
             for (Thread thread : threads) {
