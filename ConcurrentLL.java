@@ -114,7 +114,6 @@ public class ConcurrentLL {
             while (true) {
                 if (cur == null) {
                     return new Window(pred, cur);
-                    // continue retry;
                 }
                 else {
                     suc = cur.next.get(marked);
