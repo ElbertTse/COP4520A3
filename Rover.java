@@ -4,17 +4,17 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Rover {
 
-    public static void printReport(int day, ConcurrentSkipListSet<Double> temps, ConcurrentSkipListSet<TempData> diffs) {
-        System.out.println("Hour " + (day + 1) + " report:\n");
+    public static void printReport(int hour, ConcurrentSkipListSet<Double> temps, ConcurrentSkipListSet<TempData> diffs) {
+        System.out.println("Hour " + (hour + 1) + " report:\n");
 
-        System.out.println("Top 5 highest temperatures: ");
+        System.out.println("Top 5 highest temperatures (Degrees F): ");
         for (int i = 0; i < 5; i++) {
             System.out.print(temps.pollLast() + " ");
         }
 
         System.out.println("\n");
 
-        System.out.println("Top 5 lowest temperatures: ");
+        System.out.println("Top 5 lowest temperatures (Degrees F): ");
         for (int i = 0; i < 5; i++) {
             System.out.print(temps.pollFirst() + " ");
         }

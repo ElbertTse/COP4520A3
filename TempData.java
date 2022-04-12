@@ -1,5 +1,3 @@
-import java.lang.Math;
-
 public class TempData implements Comparable<TempData>{
 
     private class TempTimestamp {
@@ -20,7 +18,7 @@ public class TempData implements Comparable<TempData>{
 
     public TempData() {
         this.maxDifference = Double.MIN_VALUE;
-        this.interval = new TempTimestamp[10];
+        this.interval = new TempTimestamp[60];
         this.ptr = 0;
         this.start = 0;
         this.end = 0;
@@ -34,21 +32,23 @@ public class TempData implements Comparable<TempData>{
         if (this.start < this.end) {
             return "The greatest temperature difference happened between " + this.start + 
                 " seconds and " + this.end + " seconds with a difference of " + 
-                this.maxDifference + " degrees";
+                this.maxDifference + " degrees F";
         } else {
             return "The greatest temperature difference happened between " + this.end + 
                 " seconds and " + this.start + " seconds with a difference of " + 
-                this.maxDifference + " degrees";
+                this.maxDifference + " degrees F";
         }
     }
 
     public void add(int time, double temp) {
- 
-        this.interval[ptr++ % 10] = new TempTimestamp(time, temp);
+        // Add a new timestamp to the list
+        this.interval[ptr] = new TempTimestamp(time, temp);
 
+        // After 10 minutes have passed, start looking for an interval
         if (ptr >= 10) {
             updateDiff();
         }
+        ptr++;
     }
 
     public void clear() {
@@ -56,33 +56,18 @@ public class TempData implements Comparable<TempData>{
     }
 
     public void updateDiff() {
-        double minVal = Double.MAX_VALUE, maxVal = Double.MIN_VALUE;
+        double tempDifference = this.interval[ptr].temp - this.interval[ptr - 10].temp;        
+        
+        if (tempDifference > this.maxDifference) {
+            this.maxDifference = tempDifference;
 
-        for (int i = 0; i < 10; i++) {
-            // Attempt to update the min temp
-            minVal = Math.min(minVal, this.interval[i].temp);
-            
-            // If min temp did change, update the time
-            if (minVal == this.interval[i].temp) {
-                this.start = this.interval[i].time;
-            }
-
-            // Attempt to update the max temp
-            maxVal = Math.max(maxVal, this.interval[i].temp);
-
-            // If max temp did change, update the time
-
-            if (maxVal == this.interval[i].temp) {
-                this.end = this.interval[i].time;
-            }
+            this.start = this.interval[ptr].time;
+            this.end = this.interval[ptr - 10].time;
         }
-
-        this.maxDifference = maxVal - minVal;
     }
 
     @Override
     public int compareTo(TempData o) {
-        
         return Double.compare(this.maxDifference, o.maxDifference);
     }
 
