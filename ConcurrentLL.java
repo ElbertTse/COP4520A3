@@ -147,7 +147,7 @@ public class ConcurrentLL {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        Node cur = this.head;
+        Node cur = this.head.next.getReference();
 
         while (cur != null) {
             sb.append(cur.data + " -> ");
